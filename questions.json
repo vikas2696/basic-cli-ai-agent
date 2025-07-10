@@ -1,0 +1,47 @@
+[
+ {
+  "QuestionId": 1,
+  "Ques": "Which mountain range separates the Indian subcontinent from Central Asia?",
+  "OptionA": "Himalayas",
+  "OptionB": "Aravalis",
+  "OptionC": "Western Ghats",
+  "OptionD": "Trans Himalayan",
+  "Answer": "Himalayas"
+ },
+ {
+  "QuestionId": 2,
+  "Ques": "The Thar Desert is primarily located in which part of India?",
+  "OptionA": "Eastern India",
+  "OptionB": "Northern India",
+  "OptionC": "Western India",
+  "OptionD": "Southern India",
+  "Answer": "Western India"
+ },
+ {
+  "QuestionId": 3,
+  "Ques": "The Brahmaputra River originates from which country?",
+  "OptionA": "Nepal",
+  "OptionB": "China",
+  "OptionC": "Bhutan",
+  "OptionD": "Myanmar",
+  "Answer": "China"
+ },
+ {
+  "QuestionId": 4,
+  "Ques": "Which of the following is a major coastal plain in India?",
+  "OptionA": "The Deccan Plateau",
+  "OptionB": "The Malabar Coast",
+  "OptionC": "The Konkan Coast",
+  "OptionD": "The Vindhya Range",
+  "Answer": "The Malabar Coast"
+ },
+ {
+  "QuestionId": 5,
+  "Ques": "The Western Ghats are known for their rich biodiversity. What is a primary reason for this?",
+  "OptionA": "Volcanic activity",
+  "OptionB": "High rainfall and dense forests",
+  "OptionC": "Arid conditions",
+  "OptionD": "Flat topography",
+  "Answer": "High rainfall and dense forests"
+ }
+]

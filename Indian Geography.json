@@ -1,0 +1,47 @@
+[
+ {
+  "QuestionId": 1,
+  "Ques": "Which mountain range forms India’s northern border?",
+  "OptionA": "Himalayas",
+  "OptionB": "Aravalis",
+  "OptionC": "Vindhyan Range",
+  "OptionD": "Aravalli Range",
+  "Answer": "Himalayas"
+ },
+ {
+  "QuestionId": 2,
+  "Ques": "The Thar Desert is primarily located in which part of India?",
+  "OptionA": "Northern India",
+  "OptionB": "Southern India",
+  "OptionC": "Western India",
+  "OptionD": "Eastern India",
+  "Answer": "Western India"
+ },
+ {
+  "QuestionId": 3,
+  "Ques": "The Deccan Plateau is characterized by volcanic activity. True or False?",
+  "OptionA": "True",
+  "OptionB": "False",
+  "OptionC": "Sometimes",
+  "OptionD": "Not applicable",
+  "Answer": "True"
+ },
+ {
+  "QuestionId": 4,
+  "Ques": "Which river is considered the ‘holy river’ of India and is central to Hinduism?",
+  "OptionA": "Yamuna",
+  "OptionB": "Ganga",
+  "OptionC": "Indus",
+  "OptionD": "Brahmaputra",
+  "Answer": "Ganga"
+ },
+ {
+  "QuestionId": 5,
+  "Ques": "The coastline of Gujarat is predominantly...",
+  "OptionA": "Sandy beaches",
+  "OptionB": "Rocky cliffs",
+  "OptionC": "Mangrove forests",
+  "OptionD": "Coral reefs",
+  "Answer": "Rocky cliffs"
+ }
+]

@@ -1,0 +1,47 @@
+[
+ {
+  "QuestionId": 1,
+  "Ques": "What is a way scientists learn about how things work?",
+  "OptionA": "By guessing",
+  "OptionB": "Through observation and experimentation",
+  "OptionC": "By ignoring things",
+  "OptionD": "By making things disappear",
+  "Answer": "Through observation and experimentation"
+ },
+ {
+  "QuestionId": 2,
+  "Ques": "A plant grows because of...",
+  "OptionA": "Rain",
+  "OptionB": "Sunlight and water",
+  "OptionC": "Ghosts",
+  "OptionD": "Chocolate",
+  "Answer": "Sunlight and water"
+ },
+ {
+  "QuestionId": 3,
+  "Ques": "What does a scientist do to test an idea?",
+  "OptionA": "Throws it away",
+  "OptionB": "Builds a machine",
+  "OptionC": "Sleeps on it",
+  "OptionD": "Doesn't think about it",
+  "Answer": "Builds a machine"
+ },
+ {
+  "QuestionId": 4,
+  "Ques": "Why is it important to observe things?",
+  "OptionA": "To confuse people",
+  "OptionB": "To learn what happens",
+  "OptionC": "To make things messy",
+  "OptionD": "To waste time",
+  "Answer": "To learn what happens"
+ },
+ {
+  "QuestionId": 5,
+  "Ques": "What does a scientist do?",
+  "OptionA": "Plays video games",
+  "OptionB": "Looks around and asks questions",
+  "OptionC": "Eats pizza",
+  "OptionD": "Sings songs",
+  "Answer": "Looks around and asks questions"
+ }
+]

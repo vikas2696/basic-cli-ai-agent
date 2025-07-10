@@ -107,21 +107,27 @@ func hasEmptyFields(q models.Question) bool {
 
 func createJSON(fileData string) string {
 
+	error_string := `. JSON string should be in this format: {"topic": [topic_name], "questions": [{question},{question},..]}
+		(Disclaimer: do not use curly quotes, and the JSON string should be in the single line)`
+
 	var questions models.QuestionsJson
 	err := json.Unmarshal([]byte(fileData), &questions)
 	if err != nil {
-		return err.Error() + " try again"
+		return err.Error() + error_string
 	}
 
 	for _, q := range questions.Questions {
 		if hasEmptyFields(q) {
-			return "The generated questions have some empty fields, recheck them and generate again without empty fields"
+			return `The generated questions have some empty fields, recheck them and generate again without empty fields.
+			Each question must be a JSON object with these exact fields:{"QuestionId": [integer],"Ques": "[clear, specific question]",
+			"OptionA": "[first option]","OptionB": "[second option]","OptionC": "[third option]","OptionD": "[fourth option]",
+			"Answer": "[complete correct answer text matching one of the options exactly]"}` + error_string
 		}
 	}
 
 	byte_questions, err := json.MarshalIndent(questions.Questions, "", " ")
 	if err != nil {
-		return err.Error() + " try again"
+		return err.Error() + error_string
 	}
 
 	err = os.WriteFile(questions.Topic+".json", byte_questions, 0644)
@@ -148,14 +154,16 @@ func main() {
 		`You are a Quiz Creator AI agent. You analyse the user input, research about it and then generate relevant high quality questions.
 
 	Process:
-	1. Analyse the user's input to identify the core topics related to it.
-	2. Gather enough information about the topic and related topics using tools.
+	1. Analyse the user's input to identify the core topics related to it and then decide the one word queries.
+	2. Gather enough information about the topics and related topics related to the queries, using tools
+	**(first decide the one word query terms related to the user input and use web_search tool to gather basic the information about each query,
+	then use llm_search to to get more info to deepen the reseach)**.
 	3. Build a good and complete understanding of the topic and related topics with the help of the gathered information
 	4. Generate the quiz questions accordingly in the specified format and save it in a json file.
 	4. If you get any error in creating the json file, then analyse the error, think about why is it happening and what can you change in your json string to remove the error.
 
 	Question Format:
-	Each question must be a JSON object with these exact fields:
+	Each question must be a JSON string with these exact fields in single line:
 	{
 		"QuestionId": [integer],
 		"Ques": "[clear, specific question]",
@@ -165,7 +173,7 @@ func main() {
 		"OptionD": "[fourth option]",
 		"Answer": "[complete correct answer text matching one of the options exactly]"
 	}
-	for example, 
+	for example,
 	{
 		"QuestionId": 1,
 		"Ques": "What is a qubit?",
@@ -177,33 +185,33 @@ func main() {
 	}
 
 	Available Tools:
-	- web_search: lets you search a query on the search engine for your research purpose. Input format: your search query
-	- llm_search: gives you basic information about the topic. Input format: your search query
-	- json_file_creator: creates a json file of the questions you will provide, takes input in the form of a JSON string of single line. 
-						 Input format: {"topic": [topic_name], "questions":[{question},{question},..]}(Disclaimer: do not use curly quotes)
+	1. Tool: web_search  
+	- Purpose: Returns a summary related to a general topic.  
+	- Input format: A single word or a short keyword (e.g., "gravity", "Earth").  
+	- Do NOT use full sentences or detailed questions.
 
-	Tool Selection Rules:
+	2. Tool: llm_search  
+	- Purpose: Retrieves specific and detailed information about any topic.  
+	- Input format: A complete query or descriptive sentence (e.g., "Explain quantum entanglement", "Why did the Mughal Empire decline?").
 
-	Use web_search when:
-	- You need current, real-time information
-	- Looking for recent developments or news
-	- Researching factual data, statistics, or specific details
-	- Finding multiple perspectives on a topic
-	- Gathering comprehensive information about a subject
+	3. Tool: json_file_creator  
+	- Purpose: Creates a JSON file containing quiz questions.  
+	- Input format: A single-line JSON string in this format:  
+	{"topic": "Topic Name", "questions": [{question1}, {question2}, ...]}  
+	- Rules:  
+		- Use only straight quotes (") — no curly quotes (“ or ”)  
+		- Keep the entire JSON on a single line (no line breaks or indentation)  
+		- Ensure the JSON is valid and properly formatted
+	Follow these formats exactly when calling the tools.
 
-	Use llm_search when:
-	- if you are not satisfied with the web_search tool or need more information
-	- You need to refine or clarify information already gathered
-	- Looking for specific details within a large dataset
-	- Need to cross-reference or verify information
-	- Searching for patterns or connections in collected data
-	
 	You MUST think in this format:
 	Thought: [your reasoning about what to do next]
 	Action: tool_name
 	Action Input: tool_Input_format
 
-	STOP HERE Do not generate "Observation:" - the system will provide it.
+	**IMPORTANT: After Action Input, DO NOT GENERATE anything else.  
+	DO NOT write "Observation:". The system will provide the observation.  
+	You MUST STOP after Action Input.**
 
 	After receiving the observation, continue:
 	Thought: [reasoning about the observation]
@@ -216,12 +224,13 @@ func main() {
 	Remember:
 	-Always start with a Thought before taking any Action.
 	-Try to use multiple tools before deciding to generate the questions.
+	-Do Not try more that 10 times when stuck.
 	-Always recheck and re-evaluate the questions for correct format and presence of all the fields.
 	-Always try gathering enough information about the topic before generating the questions.`
 
 	var user_input_message models.Message
 	user_input_message.Role = "user"
-	user_input_message.Content = "quiz about simple science, 5 questions, very easy"
+	user_input_message.Content = "Akbar and his son"
 
 	all_messages = append(all_messages, message_to_send)
 	all_messages = append(all_messages, user_input_message)
@@ -256,11 +265,7 @@ func main() {
 		if action == "web_search" || strings.Contains(action, "web_search") {
 			fmt.Println("USING WEB SEARCH TOOL")
 
-			observation, err = tools.DuckDuckGoSearch(actionInput)
-			if err != nil {
-				fmt.Println(err.Error())
-				return
-			}
+			observation = tools.DuckDuckGoSearch(actionInput)
 
 		} else if action == "json_file_creator" || strings.Contains(action, "json_file_creator") {
 			fmt.Println("USING JSON FILE CREATOR TOOL")
@@ -270,7 +275,7 @@ func main() {
 
 			var llmSearchMessage models.Message
 			llmSearchMessage.Role = "assistant"
-			llmSearchMessage.Content = "give me one concise paragraph and quality information without any follow-up, which will help me with : " + actionInput
+			llmSearchMessage.Content = "Give me most important and deep 30 points for this query without any follow ups : " + actionInput
 
 			llmSearchMessages := []models.Message{llmSearchMessage}
 
@@ -319,10 +324,8 @@ func main() {
 }
 
 // func main() {
-// 	result, err := tools.DuckDuckGoSearch("Quantum Computing")
-// 	if err != nil {
-// 		fmt.Println(err.Error())
-// 	} else {
-// 		fmt.Println(result)
-// 	}
+// 	result := tools.DuckDuckGoSearch("The Great Akbar")
+
+// 	fmt.Println(result)
+
 // }

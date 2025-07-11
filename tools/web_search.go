@@ -86,8 +86,8 @@ func DuckDuckGoSearch(query string) string {
 		}
 
 		summary := naiveSummarize(main_text, 30)
-		return fmt.Sprintf("%s\n%s\n%s", result.Heading, result.Abstract, summary)
+		return (summary)
 	}
 
-	return "sorry, No result found, try using **one word query** or try using another tool."
+	return "sorry, No result found, try using **one word query** or try using another tool, if you have a specific muti-word query."
 }

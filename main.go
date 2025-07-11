@@ -150,8 +150,7 @@ func main() {
 	all_messages := previous_messages
 
 	message_to_send.Role = "system"
-	message_to_send.Content =
-		`You are a Quiz Creator AI agent. You analyse the user input, research about it and then generate relevant high quality questions.
+	message_to_send.Content = `You are a Quiz Creator AI agent. You analyse the user input, research about it and then generate relevant high quality questions.
 
 	Process:
 	1. Analyse the user's input to identify the core topics related to it and then decide the one word queries.
@@ -217,6 +216,8 @@ func main() {
 	Thought: [reasoning about the observation]
 	Action: [Next action if needed]
 
+	You can continue this cycle as most 10 times or until you are satisfied that you have enough information to perform the task successfully
+
 	Final Output:
 	When task is complete, provide:
 	Final Answer: [Task Successful/Unsuccessful - with brief explanation]
@@ -230,7 +231,7 @@ func main() {
 
 	var user_input_message models.Message
 	user_input_message.Role = "user"
-	user_input_message.Content = "Akbar and his son"
+	user_input_message.Content = "history, 10 questions"
 
 	all_messages = append(all_messages, message_to_send)
 	all_messages = append(all_messages, user_input_message)

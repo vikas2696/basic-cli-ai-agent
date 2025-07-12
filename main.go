@@ -68,11 +68,11 @@ func write_context_file(filename string, messages []models.Message) error {
 
 func LLMcall(messages []models.Message) (map[string]any, error) {
 
-	llm_endpoint_url := "http://localhost:11434/api/chat"
+	llm_endpoint_url := "https://api.groq.com/openai/v1/chat/completions"
 	var result map[string]any
 
 	llm_request_body := models.RequestBody{
-		Model:    "gemma3",
+		Model:    "llama3-8b-8192",
 		Messages: messages,
 		Stream:   false,
 	}
@@ -83,11 +83,23 @@ func LLMcall(messages []models.Message) (map[string]any, error) {
 		return result, err
 	}
 
-	response, err := http.Post(llm_endpoint_url, "application/json", bytes.NewBuffer(json_request_body))
+	client := &http.Client{}
+
+	req, err := http.NewRequest("POST", llm_endpoint_url, bytes.NewReader(json_request_body))
 	if err != nil {
-		fmt.Println("Error making POST request:", err)
+		fmt.Println("Error marshaling:", err)
 		return result, err
 	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer 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")
+
+	response, err := client.Do(req)
+	if err != nil {
+		fmt.Println("Error marshaling:", err)
+		return result, err
+	}
+	defer response.Body.Close()
 
 	json.NewDecoder(response.Body).Decode(&result)
 	return result, err
@@ -95,9 +107,11 @@ func LLMcall(messages []models.Message) (map[string]any, error) {
 
 func convertLLMResult(result map[string]any) models.Message {
 	var received_message models.Message
-	full_message := result["message"].(map[string]any)
-	received_message.Role = full_message["role"].(string)
-	received_message.Content = full_message["content"].(string)
+	response := result["choices"].([]any)
+	full_message := response[0].(map[string]any)
+	message := full_message["message"].(map[string]any)
+	received_message.Role = message["role"].(string)
+	received_message.Content = message["content"].(string)
 	return received_message
 }
 
@@ -184,22 +198,22 @@ func main() {
 	}
 
 	Available Tools:
-	1. Tool: web_search  
-	- Purpose: Returns a summary related to a general topic.  
-	- Input format: A single word or a short keyword (e.g., "gravity", "Earth").  
+	1. Tool: web_search
+	- Purpose: Returns a summary related to a general topic.
+	- Input format: A single word or a short keyword (e.g., "gravity", "Earth").
 	- Do NOT use full sentences or detailed questions.
 
-	2. Tool: llm_search  
-	- Purpose: Retrieves specific and detailed information about any topic.  
+	2. Tool: llm_search
+	- Purpose: Retrieves specific and detailed information about any topic.
 	- Input format: A complete query or descriptive sentence (e.g., "Explain quantum entanglement", "Why did the Mughal Empire decline?").
 
-	3. Tool: json_file_creator  
-	- Purpose: Creates a JSON file containing quiz questions.  
-	- Input format: A single-line JSON string in this format:  
-	{"topic": "Topic Name", "questions": [{question1}, {question2}, ...]}  
-	- Rules:  
-		- Use only straight quotes (") — no curly quotes (“ or ”)  
-		- Keep the entire JSON on a single line (no line breaks or indentation)  
+	3. Tool: json_file_creator
+	- Purpose: Creates a JSON file containing quiz questions.
+	- Input format: A single-line JSON string in this format:
+	{"topic": "Topic Name", "questions": [{question1}, {question2}, ...]}
+	- Rules:
+		- Use only straight quotes (") — no curly quotes (“ or ”)
+		- Keep the entire JSON on a single line (no line breaks or indentation)
 		- Ensure the JSON is valid and properly formatted
 	Follow these formats exactly when calling the tools.
 
@@ -208,8 +222,8 @@ func main() {
 	Action: tool_name
 	Action Input: tool_Input_format
 
-	**IMPORTANT: After Action Input, DO NOT GENERATE anything else.  
-	DO NOT write "Observation:". The system will provide the observation.  
+	**IMPORTANT: After Action Input, DO NOT GENERATE anything else.
+	DO NOT write "Observation:". The system will provide the observation.
 	You MUST STOP after Action Input.**
 
 	After receiving the observation, continue:
@@ -325,8 +339,16 @@ func main() {
 }
 
 // func main() {
-// 	result := tools.DuckDuckGoSearch("The Great Akbar")
 
-// 	fmt.Println(result)
+// 	var new_message models.Message
+// 	new_message.Role = "user"
+// 	new_message.Content = "Hey hello"
+// 	result, err := LLMcall([]models.Message{new_message})
+// 	if err != nil {
+// 		fmt.Println(err.Error())
+// 		return
+// 	}
+// 	received_message := convertLLMResult(result)
+// 	fmt.Println(received_message.Role)
 
 // }

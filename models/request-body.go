@@ -1,12 +1,12 @@
 package models
 
 type RequestBody struct {
-	Model    string
-	Messages []Message
-	Stream   bool
+	Model    string    `json:"model"`
+	Messages []Message `json:"messages"`
+	Stream   bool      `json:"stream"`
 }
 
 type Message struct {
-	Role    string
-	Content string
+	Role    string `json:"role"`
+	Content string `json:"content"`
 }

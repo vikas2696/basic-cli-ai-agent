@@ -127,7 +127,7 @@ func convertLLMResult(result map[string]any) models.Message {
 		fmt.Println("ERROR.............................")
 		error := result["error"].(map[string]any)
 		//fmt.Println(error["code"])
-		received_message.Role = "user"
+		received_message.Role = "error"
 		received_message.Content = error["code"].(string)
 		return received_message
 	}
@@ -320,8 +320,8 @@ func main() {
 				return
 			}
 
-			llm__search_response := convertLLMResult(result)
-			observation = llm__search_response.Content
+			llm_search_response := convertLLMResult(result)
+			observation = llm_search_response.Content
 		} else {
 			fmt.Println("NO TOOL SELECTED")
 			observation = "try using the tools"
@@ -345,6 +345,10 @@ func main() {
 		// fmt.Println("RESULT..................................")
 		// fmt.Println(result)
 		received_message := convertLLMResult(result) // converting LLM result
+		if received_message.Role == "error" {
+			fmt.Print(received_message.Content)
+			return
+		}
 		//fmt.Println("RECEIVED MESSAGE..................................")
 		fmt.Println(received_message.Content)
 

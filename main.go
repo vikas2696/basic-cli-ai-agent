@@ -5,6 +5,7 @@ import (
 	"Go-ReAct-basic-AI-agent-project/tools"
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -114,7 +115,7 @@ func LLMcall(messages []models.Message) (map[string]any, error) {
 	return result, err
 }
 
-func convertLLMResult(result map[string]any) models.Message {
+func convertLLMResult(result map[string]any) (models.Message, error) {
 	var received_message models.Message
 
 	if response, ok := result["choices"].([]any); ok && len(response) > 0 {
@@ -122,14 +123,14 @@ func convertLLMResult(result map[string]any) models.Message {
 		message := full_message["message"].(map[string]any)
 		received_message.Role = message["role"].(string)
 		received_message.Content = message["content"].(string)
-		return received_message
+		return received_message, nil
 	} else {
 		fmt.Println("ERROR.............................")
 		error := result["error"].(map[string]any)
 		//fmt.Println(error["code"])
-		received_message.Role = "error"
-		received_message.Content = error["code"].(string)
-		return received_message
+		received_message.Role = "assistant"
+		received_message.Content = "Some error occured"
+		return received_message, errors.New(error["code"].(string))
 	}
 
 }
@@ -276,7 +277,11 @@ func main() {
 		return
 	}
 
-	received_message := convertLLMResult(result) // converting LLM result
+	received_message, err := convertLLMResult(result) // converting LLM result
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
 	fmt.Println(received_message.Content)
 
 	all_messages = append(all_messages, received_message) // adding received_message to the conversation file for next time usage
@@ -320,7 +325,11 @@ func main() {
 				return
 			}
 
-			llm_search_response := convertLLMResult(result)
+			llm_search_response, err := convertLLMResult(result)
+			if err != nil {
+				fmt.Println(err.Error())
+				return
+			}
 			observation = llm_search_response.Content
 		} else {
 			fmt.Println("NO TOOL SELECTED")
@@ -344,9 +353,9 @@ func main() {
 		}
 		// fmt.Println("RESULT..................................")
 		// fmt.Println(result)
-		received_message := convertLLMResult(result) // converting LLM result
-		if received_message.Role == "error" {
-			fmt.Print(received_message.Content)
+		received_message, err := convertLLMResult(result) // converting LLM result
+		if err != nil {
+			fmt.Println(err.Error())
 			return
 		}
 		//fmt.Println("RECEIVED MESSAGE..................................")

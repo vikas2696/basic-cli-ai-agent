@@ -1,9 +1,10 @@
 package models
 
 type RequestBody struct {
-	Model    string    `json:"model"`
-	Messages []Message `json:"messages"`
-	Stream   bool      `json:"stream"`
+	Model     string    `json:"model"`
+	Messages  []Message `json:"messages"`
+	Stream    bool      `json:"stream"`
+	MaxTokens int       `json:"max_tokens"`
 }
 
 type Message struct {

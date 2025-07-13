@@ -6,9 +6,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"strings"
+
+	"github.com/joho/godotenv"
 )
 
 func parseResponse(content string) (string, string, string, string, error) {
@@ -72,9 +75,10 @@ func LLMcall(messages []models.Message) (map[string]any, error) {
 	var result map[string]any
 
 	llm_request_body := models.RequestBody{
-		Model:    "llama3-8b-8192",
-		Messages: messages,
-		Stream:   false,
+		Model:     "llama3-8b-8192",
+		Messages:  messages,
+		Stream:    false,
+		MaxTokens: 256,
 	}
 
 	json_request_body, err := json.Marshal(llm_request_body)
@@ -91,8 +95,13 @@ func LLMcall(messages []models.Message) (map[string]any, error) {
 		return result, err
 	}
 
+	if err := godotenv.Load(); err != nil {
+		log.Println(".env not found!")
+	}
+	api_key := os.Getenv("LLM_API_KEY")
+
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer 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")
+	req.Header.Set("Authorization", "Bearer "+api_key)
 
 	response, err := client.Do(req)
 	if err != nil {
@@ -107,12 +116,22 @@ func LLMcall(messages []models.Message) (map[string]any, error) {
 
 func convertLLMResult(result map[string]any) models.Message {
 	var received_message models.Message
-	response := result["choices"].([]any)
-	full_message := response[0].(map[string]any)
-	message := full_message["message"].(map[string]any)
-	received_message.Role = message["role"].(string)
-	received_message.Content = message["content"].(string)
-	return received_message
+
+	if response, ok := result["choices"].([]any); ok && len(response) > 0 {
+		full_message := response[0].(map[string]any)
+		message := full_message["message"].(map[string]any)
+		received_message.Role = message["role"].(string)
+		received_message.Content = message["content"].(string)
+		return received_message
+	} else {
+		fmt.Println("ERROR.............................")
+		error := result["error"].(map[string]any)
+		//fmt.Println(error["code"])
+		received_message.Role = "user"
+		received_message.Content = error["code"].(string)
+		return received_message
+	}
+
 }
 
 func hasEmptyFields(q models.Question) bool {
@@ -225,6 +244,7 @@ func main() {
 	**IMPORTANT: After Action Input, DO NOT GENERATE anything else.
 	DO NOT write "Observation:". The system will provide the observation.
 	You MUST STOP after Action Input.**
+	ALWAYS WAIT FOR OBSERVATION
 
 	After receiving the observation, continue:
 	Thought: [reasoning about the observation]
@@ -245,7 +265,7 @@ func main() {
 
 	var user_input_message models.Message
 	user_input_message.Role = "user"
-	user_input_message.Content = "history, 10 questions"
+	user_input_message.Content = "akbar"
 
 	all_messages = append(all_messages, message_to_send)
 	all_messages = append(all_messages, user_input_message)
@@ -273,7 +293,7 @@ func main() {
 	}
 
 	found := strings.Contains(received_message.Content, "Final Answer")
-	observation := "no observations yet"
+	observation := "no observations yet, try again..."
 
 	for !found {
 		fmt.Println("TRYING TO USE THE TOOLS")
@@ -289,8 +309,8 @@ func main() {
 			fmt.Println("USING LLM SEARCH TOOL")
 
 			var llmSearchMessage models.Message
-			llmSearchMessage.Role = "assistant"
-			llmSearchMessage.Content = "Give me most important and deep 30 points for this query without any follow ups : " + actionInput
+			llmSearchMessage.Role = "user"
+			llmSearchMessage.Content = "Answer this query in brief: " + actionInput
 
 			llmSearchMessages := []models.Message{llmSearchMessage}
 
@@ -302,11 +322,18 @@ func main() {
 
 			llm__search_response := convertLLMResult(result)
 			observation = llm__search_response.Content
+		} else {
+			fmt.Println("NO TOOL SELECTED")
+			observation = "try using the tools"
 		}
 
 		var new_message models.Message
-		new_message.Role = "user"
-		new_message.Content = "Observation: " + observation
+		new_message.Role = "assistant"
+		if observation != "" {
+			new_message.Content = "Observation: " + observation
+		} else {
+			new_message.Content = "Observation: no obersvations, try again..."
+		}
 		all_messages = append(all_messages, new_message)
 		fmt.Println(new_message.Content)
 
@@ -315,8 +342,10 @@ func main() {
 			fmt.Println("Error calling LLM", err)
 			return
 		}
-
+		// fmt.Println("RESULT..................................")
+		// fmt.Println(result)
 		received_message := convertLLMResult(result) // converting LLM result
+		//fmt.Println("RECEIVED MESSAGE..................................")
 		fmt.Println(received_message.Content)
 
 		found = strings.Contains(received_message.Content, "Final Answer")
@@ -328,7 +357,7 @@ func main() {
 			fmt.Println(err.Error())
 			return
 		}
-
+		//fmt.Printf("FOUND VALUE................%t", found)
 	}
 
 	err = write_context_file("conversation.json", all_messages)

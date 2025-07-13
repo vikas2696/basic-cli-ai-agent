@@ -85,7 +85,7 @@ func DuckDuckGoSearch(query string) string {
 			return err.Error() + ".Try again" + result.AbstractURL
 		}
 
-		summary := naiveSummarize(main_text, 30)
+		summary := naiveSummarize(main_text, 5)
 		return (summary)
 	}
 
